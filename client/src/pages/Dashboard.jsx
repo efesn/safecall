@@ -111,7 +111,7 @@ const Dashboard = () => {
                                 <TableBody>
                                     {customers.length > 0 ? (
                                         customers.map((customer) => (
-                                            <TableRow key={customer.id} hover>
+                                            <TableRow key={customer.customer_id} hover>
                                                 <TableCell>
                                                     <Box display="flex" alignItems="center">
                                                         <Avatar sx={{ width: 30, height: 30, mr: 1, bgcolor: '#1976d2', fontSize: '0.8rem' }}>

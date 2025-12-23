@@ -55,15 +55,15 @@ const TicketBoard = () => {
                     <TableBody>
                         {tickets.map((ticket) => (
                             <TableRow
-                                key={ticket.id}
+                                key={ticket.ticket_id}
                                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                             >
                                 <TableCell component="th" scope="row">
-                                    #{ticket.id}
+                                    #{ticket.ticket_id}
                                 </TableCell>
                                 <TableCell>{ticket.title}</TableCell>
                                 <TableCell>{ticket.customer_name}</TableCell>
-                                <TableCell>{ticket.priority}</TableCell>
+                                <TableCell>{ticket.priority_level}</TableCell>
                                 <TableCell>
                                     <Chip label={ticket.status} color={getStatusColor(ticket.status)} size="small" />
                                 </TableCell>

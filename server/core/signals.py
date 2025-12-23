@@ -16,7 +16,7 @@ def log_user_login(sender, request, user, **kwargs):
         user=user,
         event_type='Login',
         ip_address=get_client_ip(request),
-        details=f"User {user.username} logged in successfully."
+        description=f"User {user.username} logged in successfully."
     )
 
 @receiver(user_login_failed)
@@ -24,5 +24,5 @@ def log_user_login_failed(sender, credentials, request, **kwargs):
     SecurityLog.objects.create(
         event_type='Failed Attempt',
         ip_address=get_client_ip(request),
-        details=f"Login failed for username: {credentials.get('username')}"
+        description=f"Login failed for username: {credentials.get('username')}"
     )

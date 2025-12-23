@@ -18,7 +18,7 @@ const LoginPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axiosInstance.post('auth/token/', {
+            const response = await axiosInstance.post('core/token/', {
                 username: formData.username,
                 password: formData.password,
             });

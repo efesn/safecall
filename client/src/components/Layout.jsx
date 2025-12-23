@@ -8,7 +8,9 @@ import {
     ConfirmationNumber as TicketIcon, 
     People as PeopleIcon, 
     ExitToApp as LogoutIcon,
-    Phone as PhoneIcon
+    Phone as PhoneIcon,
+    Campaign as CampaignIcon,
+    Security as SecurityIcon
 } from '@mui/icons-material';
 import { useNavigate, Outlet } from 'react-router-dom';
 
@@ -56,17 +58,29 @@ const Layout = () => {
                             </ListItemIcon>
                             <ListItemText primary="Tickets" />
                         </ListItem>
-                        <ListItem button>
+                        <ListItem button onClick={() => navigate('/campaigns')}>
+                            <ListItemIcon>
+                                <CampaignIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="Campaigns" />
+                        </ListItem>
+                        <ListItem button onClick={() => navigate('/customers')}>
                             <ListItemIcon>
                                 <PeopleIcon />
                             </ListItemIcon>
                             <ListItemText primary="Customers" />
                         </ListItem>
-                        <ListItem button>
+                        <ListItem button onClick={() => navigate('/call-history')}>
                             <ListItemIcon>
                                 <PhoneIcon />
                             </ListItemIcon>
                             <ListItemText primary="Call History" />
+                        </ListItem>
+                        <ListItem button onClick={() => navigate('/security-logs')}>
+                            <ListItemIcon>
+                                <SecurityIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="Security Logs" />
                         </ListItem>
                     </List>
                     <Divider />

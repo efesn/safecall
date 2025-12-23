@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from .models import Customer, Call, Ticket
+from .models import Customer, Call, Ticket, Campaign
+
+class CampaignSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Campaign
+        fields = '__all__'
 
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,6 +13,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 class CallSerializer(serializers.ModelSerializer):
     agent_name = serializers.ReadOnlyField(source='agent.username')
+    customer_name = serializers.ReadOnlyField(source='customer.full_name')
 
     class Meta:
         model = Call

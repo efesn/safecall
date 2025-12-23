@@ -1,7 +1,14 @@
 from rest_framework import viewsets, permissions
-from .models import Customer, Call, Ticket
-from .serializers import CustomerSerializer, CallSerializer, TicketSerializer
+from .models import Customer, Call, Ticket, Campaign
+from .serializers import CustomerSerializer, CallSerializer, TicketSerializer, CampaignSerializer
 from core.permissions import IsAdmin, IsSupervisor, IsAgent
+from core.models import SecurityLog
+from core.signals import get_client_ip
+
+class CampaignViewSet(viewsets.ModelViewSet):
+    queryset = Campaign.objects.all()
+    serializer_class = CampaignSerializer
+    permission_classes = [IsSupervisor]
 
 class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
@@ -11,6 +18,18 @@ class CustomerViewSet(viewsets.ModelViewSet):
         if self.action in ['destroy']:
             return [IsAdmin()]
         return [IsAgent()]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Log Data Access
+        if request.user.is_authenticated:
+            SecurityLog.objects.create(
+                user=request.user,
+                event_type='Data Access',
+                ip_address=get_client_ip(request),
+                description=f"Viewed customer profile: {instance.full_name} (ID: {instance.customer_id})"
+            )
+        return super().retrieve(request, *args, **kwargs)
 
 class CallViewSet(viewsets.ModelViewSet):
     queryset = Call.objects.all()
