@@ -10,13 +10,37 @@ import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
     const [customers, setCustomers] = useState([]);
+    const [ticketStats, setTicketStats] = useState({ open: 0, pending: 0, resolved: 0 });
+    const [activeCalls, setActiveCalls] = useState(0);
+    const [recentTickets, setRecentTickets] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axiosInstance.get('crm/customers/');
-                setCustomers(response.data);
+                const [customersRes, ticketsRes, callsRes] = await Promise.all([
+                    axiosInstance.get('crm/customers/'),
+                    axiosInstance.get('crm/tickets/'),
+                    axiosInstance.get('crm/calls/')
+                ]);
+
+                setCustomers(customersRes.data);
+
+                // Calculate Ticket Stats
+                const tickets = ticketsRes.data;
+                setTicketStats({
+                    open: tickets.filter(t => t.status === 'Open').length,
+                    pending: tickets.filter(t => t.status === 'Pending').length,
+                    resolved: tickets.filter(t => t.status === 'Resolved').length
+                });
+                
+                // Get recent tickets (last 5)
+                setRecentTickets(tickets.sort((a, b) => b.ticket_id - a.ticket_id).slice(0, 5));
+
+                // Calculate Active Calls
+                const calls = callsRes.data;
+                setActiveCalls(calls.filter(c => !c.call_end_time).length);
+
             } catch (error) {
                 console.error("Error fetching data", error);
             }
@@ -40,8 +64,8 @@ const Dashboard = () => {
                     </Paper>
                 </Grid>
 
-                {/* Stats Cards */}
-                <Grid item xs={12} md={4}>
+                {/* Stats Cards - Row 1 */}
+                <Grid item xs={12} md={6}>
                     <Card sx={{ height: '100%', borderLeft: '5px solid #1976d2' }}>
                         <CardContent>
                             <Typography color="text.secondary" gutterBottom>
@@ -56,18 +80,35 @@ const Dashboard = () => {
                         </CardActions>
                     </Card>
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={6}>
                     <Card sx={{ height: '100%', borderLeft: '5px solid #2e7d32' }}>
                         <CardContent>
                             <Typography color="text.secondary" gutterBottom>
                                 Active Calls
                             </Typography>
                             <Typography variant="h3" component="div">
-                                0
+                                {activeCalls}
                             </Typography>
                         </CardContent>
                         <CardActions>
-                            <Button size="small">View Logs</Button>
+                            <Button size="small" onClick={() => navigate('/call-history')}>View Logs</Button>
+                        </CardActions>
+                    </Card>
+                </Grid>
+
+                {/* Stats Cards - Row 2 (Tickets) */}
+                <Grid item xs={12} md={4}>
+                    <Card sx={{ height: '100%', borderLeft: '5px solid #d32f2f' }}>
+                        <CardContent>
+                            <Typography color="text.secondary" gutterBottom>
+                                Open Tickets
+                            </Typography>
+                            <Typography variant="h3" component="div">
+                                {ticketStats.open}
+                            </Typography>
+                        </CardContent>
+                        <CardActions>
+                            <Button size="small" onClick={() => navigate('/tickets')}>Manage</Button>
                         </CardActions>
                     </Card>
                 </Grid>
@@ -78,23 +119,38 @@ const Dashboard = () => {
                                 Pending Tickets
                             </Typography>
                             <Typography variant="h3" component="div">
-                                0
+                                {ticketStats.pending}
                             </Typography>
                         </CardContent>
                         <CardActions>
-                            <Button size="small" onClick={() => navigate('/tickets')}>Manage Tickets</Button>
+                            <Button size="small" onClick={() => navigate('/tickets')}>Manage</Button>
+                        </CardActions>
+                    </Card>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                    <Card sx={{ height: '100%', borderLeft: '5px solid #2e7d32' }}>
+                        <CardContent>
+                            <Typography color="text.secondary" gutterBottom>
+                                Resolved Tickets
+                            </Typography>
+                            <Typography variant="h3" component="div">
+                                {ticketStats.resolved}
+                            </Typography>
+                        </CardContent>
+                        <CardActions>
+                            <Button size="small" onClick={() => navigate('/tickets')}>View Archive</Button>
                         </CardActions>
                     </Card>
                 </Grid>
 
                 {/* Customer List */}
-                <Grid item xs={12} id="customer-list">
+                <Grid item xs={12} md={8} id="customer-list">
                     <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                             <Typography variant="h6" color="primary">
                                 Recent Customers
                             </Typography>
-                            <Button variant="contained" size="small">Add Customer</Button>
+                           {/*} <Button variant="contained" size="small">Add Customer</Button> */}
                         </Box>
                         
                         <TableContainer>
@@ -110,7 +166,7 @@ const Dashboard = () => {
                                 </TableHead>
                                 <TableBody>
                                     {customers.length > 0 ? (
-                                        customers.map((customer) => (
+                                        customers.slice(0, 5).map((customer) => (
                                             <TableRow key={customer.customer_id} hover>
                                                 <TableCell>
                                                     <Box display="flex" alignItems="center">
@@ -142,6 +198,49 @@ const Dashboard = () => {
                                                     No customers found.
                                                 </Typography>
                                             </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Paper>
+                </Grid>
+
+                {/* Recent Tickets Widget */}
+                <Grid item xs={12} md={4}>
+                    <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                            <Typography variant="h6" color="primary">
+                                Recent Tickets
+                            </Typography>
+                            <Button size="small" onClick={() => navigate('/tickets')}>View All</Button>
+                        </Box>
+                        <TableContainer>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                        <TableCell>ID</TableCell>
+                                        <TableCell>Title</TableCell>
+                                        <TableCell align="right">Status</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {recentTickets.map((ticket) => (
+                                        <TableRow key={ticket.ticket_id}>
+                                            <TableCell>#{ticket.ticket_id}</TableCell>
+                                            <TableCell>{ticket.title.substring(0, 20)}...</TableCell>
+                                            <TableCell align="right">
+                                                <Chip 
+                                                    label={ticket.status} 
+                                                    size="small" 
+                                                    color={ticket.status === 'Open' ? 'error' : ticket.status === 'Pending' ? 'warning' : 'success'} 
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                    {recentTickets.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={3} align="center">No recent tickets</TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>

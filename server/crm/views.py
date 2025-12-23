@@ -49,4 +49,4 @@ class TicketViewSet(viewsets.ModelViewSet):
         return [IsAgent()]
 
     def perform_create(self, serializer):
-        serializer.save(agent=self.request.user)
+        serializer.save(agent=self.request.user, created_by=self.request.user)
