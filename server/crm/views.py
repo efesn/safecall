@@ -1,4 +1,6 @@
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from .models import Customer, Call, Ticket, Campaign
 from .serializers import CustomerSerializer, CallSerializer, TicketSerializer, CampaignSerializer
 from core.permissions import IsAdmin, IsSupervisor, IsAgent
@@ -9,6 +11,35 @@ class CampaignViewSet(viewsets.ModelViewSet):
     queryset = Campaign.objects.all()
     serializer_class = CampaignSerializer
     permission_classes = [IsSupervisor]
+
+    @action(detail=True, methods=['get'])
+    def members(self, request, pk=None):
+        campaign = self.get_object()
+        customers = campaign.customers.all()
+        serializer = CustomerSerializer(customers, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def add_customer(self, request, pk=None):
+        campaign = self.get_object()
+        customer_id = request.data.get('customer_id')
+        try:
+            customer = Customer.objects.get(pk=customer_id)
+            customer.campaigns.add(campaign)
+            return Response({'status': 'customer added'})
+        except Customer.DoesNotExist:
+            return Response({'error': 'customer not found'}, status=404)
+
+    @action(detail=True, methods=['post'])
+    def remove_customer(self, request, pk=None):
+        campaign = self.get_object()
+        customer_id = request.data.get('customer_id')
+        try:
+            customer = Customer.objects.get(pk=customer_id)
+            customer.campaigns.remove(campaign)
+            return Response({'status': 'customer removed'})
+        except Customer.DoesNotExist:
+            return Response({'error': 'customer not found'}, status=404)
 
 class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
