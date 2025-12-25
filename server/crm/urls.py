@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import CustomerViewSet, CallViewSet, TicketViewSet, CampaignViewSet
 from .twilio_views import TwilioWebhookView
+from .email_views import EmailWebhookView
 
 router = DefaultRouter()
 router.register(r'customers', CustomerViewSet)
@@ -12,4 +13,5 @@ router.register(r'campaigns', CampaignViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('webhooks/twilio/', TwilioWebhookView.as_view(), name='twilio-webhook'),
+    path('webhooks/email/', EmailWebhookView.as_view(), name='email-webhook'),
 ]
