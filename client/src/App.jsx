@@ -8,6 +8,7 @@ import Customers from './pages/Customers';
 import CallHistory from './pages/CallHistory';
 import SecurityLogs from './pages/SecurityLogs';
 import SupervisorDashboard from './pages/SupervisorDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import Layout from './components/Layout';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 
@@ -23,6 +24,7 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/supervisor" element={<SupervisorDashboard />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/tickets" element={<TicketBoard />} />
             <Route path="/campaigns" element={<Campaigns />} />
             <Route path="/customers" element={<Customers />} />

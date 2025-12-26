@@ -12,7 +12,8 @@ import {
     Phone as PhoneIcon,
     Campaign as CampaignIcon,
     Security as SecurityIcon,
-    Assessment as AssessmentIcon
+    Assessment as AssessmentIcon,
+    AdminPanelSettings as AdminIcon
 } from '@mui/icons-material';
 import { useNavigate, Outlet } from 'react-router-dom';
 
@@ -41,6 +42,7 @@ const Layout = () => {
     };
 
     const isSupervisorOrAdmin = user && (user.role === 'Supervisor' || user.role === 'Admin' || user.is_superuser);
+    const isAdmin = user && (user.role === 'Admin' || user.is_superuser);
 
     return (
         <Box sx={{ display: 'flex' }}>
@@ -76,6 +78,15 @@ const Layout = () => {
                                     <AssessmentIcon />
                                 </ListItemIcon>
                                 <ListItemText primary="Supervisor View" />
+                            </ListItem>
+                        )}
+
+                        {isAdmin && (
+                            <ListItem button onClick={() => navigate('/admin')}>
+                                <ListItemIcon>
+                                    <AdminIcon />
+                                </ListItemIcon>
+                                <ListItemText primary="User Management" />
                             </ListItem>
                         )}
 

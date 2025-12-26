@@ -2,9 +2,9 @@ from rest_framework import viewsets, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import SecurityLog
-from .serializers import SecurityLogSerializer
-from .permissions import IsSupervisor
+from .models import SecurityLog, User
+from .serializers import SecurityLogSerializer, UserSerializer
+from .permissions import IsSupervisor, IsAdmin
 
 class CurrentUserView(APIView):
     permission_classes = [IsAuthenticated]
@@ -36,3 +36,8 @@ class SecurityLogViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SecurityLog.objects.all()
     serializer_class = SecurityLogSerializer
     permission_classes = [IsSupervisor]
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAdmin]
