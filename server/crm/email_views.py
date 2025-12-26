@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from .models import Ticket, Customer
 from django.utils import timezone
+from .utils import assign_agent_to_customer
 
 @method_decorator(csrf_exempt, name='dispatch')
 class EmailWebhookView(APIView):
@@ -39,6 +40,9 @@ class EmailWebhookView(APIView):
                 'phone_number': 'Unknown' # Placeholder
             }
         )
+
+        # Auto-assign agent
+        assign_agent_to_customer(customer)
 
         # Create a Ticket automatically
         ticket = Ticket.objects.create(

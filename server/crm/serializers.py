@@ -7,6 +7,8 @@ class CampaignSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CustomerSerializer(serializers.ModelSerializer):
+    assigned_agent_name = serializers.ReadOnlyField(source='assigned_agent.username')
+
     class Meta:
         model = Customer
         fields = '__all__'

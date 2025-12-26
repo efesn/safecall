@@ -22,6 +22,9 @@ class Customer(models.Model):
     registration_date = models.DateTimeField(auto_now_add=True)
     account_status = models.CharField(max_length=50, default='Active')
     
+    # Assigned Agent (Owner)
+    assigned_agent = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_customers')
+
     # N-M Relationship with Campaign
     campaigns = models.ManyToManyField(Campaign, related_name='customers', blank=True)
 

@@ -42,8 +42,16 @@ class CampaignViewSet(viewsets.ModelViewSet):
             return Response({'error': 'customer not found'}, status=404)
 
 class CustomerViewSet(viewsets.ModelViewSet):
-    queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role in ['Supervisor', 'Admin']:
+            return Customer.objects.all()
+        return Customer.objects.filter(assigned_agent=user)
+
+    def perform_create(self, serializer):
+        serializer.save(assigned_agent=self.request.user)
     
     def get_permissions(self):
         if self.action in ['destroy']:
@@ -81,3 +89,22 @@ class TicketViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(agent=self.request.user, created_by=self.request.user)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Check if user is assigned agent or supervisor/admin
+        if request.user.role not in ['Supervisor', 'Admin'] and instance.agent != request.user:
+            return Response({'error': 'You are not authorized to view this ticket details.'}, status=403)
+        return super().retrieve(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if request.user.role not in ['Supervisor', 'Admin'] and instance.agent != request.user:
+            return Response({'error': 'You are not authorized to edit this ticket.'}, status=403)
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if request.user.role not in ['Supervisor', 'Admin'] and instance.agent != request.user:
+            return Response({'error': 'You are not authorized to edit this ticket.'}, status=403)
+        return super().partial_update(request, *args, **kwargs)

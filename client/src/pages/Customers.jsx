@@ -57,6 +57,7 @@ const Customers = () => {
                             <TableCell>Full Name</TableCell>
                             <TableCell>Email</TableCell>
                             <TableCell>Phone</TableCell>
+                            <TableCell>Assigned Agent</TableCell>
                             <TableCell>Status</TableCell>
                             <TableCell>Actions</TableCell>
                         </TableRow>
@@ -68,6 +69,7 @@ const Customers = () => {
                                 <TableCell>{customer.full_name}</TableCell>
                                 <TableCell>{customer.email}</TableCell>
                                 <TableCell>{customer.phone_number}</TableCell>
+                                <TableCell>{customer.assigned_agent_name || 'Unassigned'}</TableCell>
                                 <TableCell>
                                     <Chip 
                                         label={customer.account_status} 

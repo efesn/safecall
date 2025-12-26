@@ -3,7 +3,7 @@ import axiosInstance from '../api/axios';
 import { 
     Container, Typography, Box, Button, Table, TableBody, 
     TableCell, TableContainer, TableHead, TableRow, Paper, Chip,
-    Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Grid, IconButton
+    Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Grid, IconButton, Alert
 } from '@mui/material';
 import { Edit as EditIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +13,11 @@ const TicketBoard = () => {
     const [customers, setCustomers] = useState([]);
     const [open, setOpen] = useState(false);
     const [createOpen, setCreateOpen] = useState(false);
+    const [passwordOpen, setPasswordOpen] = useState(false);
+    const [password, setPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
     const [selectedTicket, setSelectedTicket] = useState(null);
+    const [currentUser, setCurrentUser] = useState(null);
     const [editForm, setEditForm] = useState({
         status: '',
         priority_level: '',
@@ -31,12 +35,14 @@ const TicketBoard = () => {
 
     const fetchData = async () => {
         try {
-            const [ticketsRes, customersRes] = await Promise.all([
+            const [ticketsRes, customersRes, userRes] = await Promise.all([
                 axiosInstance.get('crm/tickets/'),
-                axiosInstance.get('crm/customers/')
+                axiosInstance.get('crm/customers/'),
+                axiosInstance.get('core/users/me/')
             ]);
             setTickets(ticketsRes.data);
             setCustomers(customersRes.data);
+            setCurrentUser(userRes.data);
         } catch (error) {
             console.error("Error fetching data", error);
         }
@@ -47,13 +53,35 @@ const TicketBoard = () => {
     }, []);
 
     const handleEditClick = (ticket) => {
+        // Check if user is assigned agent or supervisor/admin
+        const isAssigned = ticket.agent === currentUser?.id;
+        const isSupervisorOrAdmin = currentUser?.role === 'Supervisor' || currentUser?.role === 'Admin';
+
+        if (!isAssigned && !isSupervisorOrAdmin) {
+            alert("You are not authorized to view this ticket.");
+            return;
+        }
+
         setSelectedTicket(ticket);
         setEditForm({
             status: ticket.status,
             priority_level: ticket.priority_level,
             description: ticket.description
         });
-        setOpen(true);
+        // Open Password Dialog instead of Edit Dialog directly
+        setPassword('');
+        setPasswordError('');
+        setPasswordOpen(true);
+    };
+
+    const handlePasswordSubmit = async () => {
+        try {
+            await axiosInstance.post('core/verify-password/', { password });
+            setPasswordOpen(false);
+            setOpen(true); // Open the actual Edit/View dialog
+        } catch (error) {
+            setPasswordError("Invalid password");
+        }
     };
 
     const handleUpdate = async () => {
@@ -272,6 +300,37 @@ const TicketBoard = () => {
                     <Button onClick={() => setCreateOpen(false)}>Cancel</Button>
                     <Button onClick={handleCreate} variant="contained" color="primary">
                         Create
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Password Verification Dialog */}
+            <Dialog open={passwordOpen} onClose={() => setPasswordOpen(false)}>
+                <DialogTitle>Security Check</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" gutterBottom>
+                        Please enter your password to view ticket details.
+                    </Typography>
+                    {passwordError && <Alert severity="error" sx={{ mb: 2 }}>{passwordError}</Alert>}
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Password"
+                        type="password"
+                        fullWidth
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                                handlePasswordSubmit();
+                            }
+                        }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setPasswordOpen(false)}>Cancel</Button>
+                    <Button onClick={handlePasswordSubmit} variant="contained" color="primary">
+                        Verify
                     </Button>
                 </DialogActions>
             </Dialog>

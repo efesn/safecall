@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from .models import Call, Customer
 from django.utils import timezone
+from .utils import assign_agent_to_customer
 
 @method_decorator(csrf_exempt, name='dispatch')
 class TwilioWebhookView(APIView):
@@ -37,6 +38,9 @@ class TwilioWebhookView(APIView):
                 customer.full_name = customer_name
                 customer.save()
             
+            # Auto-assign agent
+            assign_agent_to_customer(customer)
+
             # Log the call start
             call = Call.objects.create(
                 customer=customer,

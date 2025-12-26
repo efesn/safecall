@@ -56,7 +56,7 @@ const Dashboard = () => {
                 <Grid item xs={12}>
                     <Paper sx={{ p: 3, display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}>
                         <Typography variant="h4" gutterBottom color="primary">
-                            Welcome back, Agent
+                            Welcome back to SafeCall
                         </Typography>
                         <Typography variant="body1" color="text.secondary">
                             Here is what's happening in the call center today.
